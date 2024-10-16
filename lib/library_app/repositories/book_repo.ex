@@ -20,7 +20,7 @@ defmodule LibraryApp.Repositories.BookRepo do
   def list_books_by_author_id(author_id) do
     Book
     |> where([b], b.author_id == ^author_id)
-    |> Repo.all()
+    |> Repo.one()
   end
 
   def list_books_by_author_ids(author_ids) do
@@ -33,7 +33,7 @@ defmodule LibraryApp.Repositories.BookRepo do
     Book
     |> join(:inner, [b], a in assoc(b, :author), as: :author)
     |> where([author: a], a.uuid == ^author_uuid)
-    |> Repo.all()
+    |> Repo.one()
   end
 
   def list_books_by_author_uuids(author_uuids) do
