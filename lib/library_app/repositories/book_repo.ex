@@ -61,6 +61,19 @@ defmodule LibraryApp.Repositories.BookRepo do
     |> Repo.all()
   end
 
+  def list_books_by_author_name_genre_and_rent_category(author_name, genre_name, rent_category) do
+    Book
+    |> from(as: :book)
+    |> join(:inner, [book: b], author in assoc(b, :author), as: :author)
+    |> join(:inner, [book: b], genre in assoc(b, :book_genres), as: :book_genre)
+    |> join(:inner, [book_genre: bg], g in assoc(bg, :genre), as: :genre)
+    |> where([author: a], a.name == ^author_name)
+    |> where([genre: g], g.name == ^genre_name)
+    |> where([book: b], b.rent_category == ^rent_category)
+    |> preload([:author, :genres])
+    |> Repo.all()
+  end
+
   @doc """
   List books by the given parameters.
 
@@ -118,6 +131,8 @@ defmodule LibraryApp.Repositories.BookRepo do
     |> Composite.param(:titles, &filter_by_titles/2)
     |> Composite.param(:genre_names, &filter_by_genre_names/2, requires: :genres)
     |> Composite.param(:author_name, &filter_by_author_name/2, requires: :author)
+    |> Composite.param(:author_names, &filter_by_author_name/2, requires: :author)
+    |> Composite.param(:rent_category, &filter_by_rent_category/2)
     |> Composite.param(:preload, &preload_data/2, requires: &add_dependencies_for_preloads/1)
   end
 
@@ -161,6 +176,14 @@ defmodule LibraryApp.Repositories.BookRepo do
 
   defp filter_by_author_name(query, %{is: author_name}) do
     where(query, [author: author], author.name == ^author_name)
+  end
+
+  defp filter_by_author_name(query, author_names) do
+    where(query, [author: author], author.name in ^author_names)
+  end
+
+  defp filter_by_rent_category(query, rent_category) do
+    where(query, [b], b.rent_category in ^rent_category)
   end
 
   defp join_author(query) do

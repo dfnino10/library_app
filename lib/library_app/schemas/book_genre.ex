@@ -4,7 +4,7 @@ defmodule LibraryApp.Schemas.BookGenre do
   use Ecto.Schema
   import Ecto.Changeset
 
-  @primary_key false
+  @primary_key {:id, :id, autogenerate: true}
   schema "books_genres" do
     belongs_to(:book, Book)
     belongs_to(:genre, Genre)
