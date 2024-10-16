@@ -8,6 +8,7 @@ defmodule LibraryApp.Schemas.Member do
   schema "members" do
     field(:name, :string)
     field(:email, :string)
+    field(:uuid, Ecto.UUID, default: Ecto.UUID.generate())
 
     has_many(:loans, Loan)
     has_many(:books, through: [:loans, :book])

@@ -3,6 +3,7 @@ defmodule LibraryApp.Schemas.Author do
   import Ecto.Changeset
 
   schema "authors" do
+    field(:uuid, Ecto.UUID, default: Ecto.UUID.generate())
     field(:name, :string)
     field(:bio, :string)
 

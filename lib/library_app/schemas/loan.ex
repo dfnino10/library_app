@@ -5,6 +5,7 @@ defmodule LibraryApp.Schemas.Loan do
   import Ecto.Changeset
 
   schema "loans" do
+    field(:uuid, Ecto.UUID, default: Ecto.UUID.generate())
     field(:loan_date, :date)
     field(:return_date, :date)
 

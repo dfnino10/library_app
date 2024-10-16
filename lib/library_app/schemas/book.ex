@@ -9,6 +9,9 @@ defmodule LibraryApp.Schemas.Book do
     field(:title, :string)
     field(:isbn, :string)
     field(:published_date, :date)
+    field(:uuid, Ecto.UUID, default: Ecto.UUID.generate())
+    field(:rent_category, Ecto.Enum, values: [:open, :closed])
+
     belongs_to(:author, Author)
     has_many(:book_genres, BookGenre)
     has_many(:genres, through: [:book_genres, :genre])

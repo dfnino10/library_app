@@ -8,6 +8,7 @@ defmodule LibraryApp.Schemas.Genre do
     field(:name, :string)
     has_many(:book_genres, BookGenre)
     has_many(:books, through: [:book_genres, :book])
+    field(:uuid, Ecto.UUID, default: Ecto.UUID.generate())
 
     timestamps()
   end

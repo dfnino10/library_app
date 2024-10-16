@@ -9,6 +9,58 @@ defmodule LibraryApp.Repositories.BookRepo do
   alias LibraryApp.Repo
   alias LibraryApp.Util.FlexHelper
 
+  def get_book_by_id(id) do
+    Repo.get_by(Book, id: id)
+  end
+
+  def get_book_by_uuid(uuid) do
+    Repo.get_by(Book, uuid: uuid)
+  end
+
+  def list_books_by_author_id(author_id) do
+    Book
+    |> where([b], b.author_id == ^author_id)
+    |> Repo.all()
+  end
+
+  def list_books_by_author_ids(author_ids) do
+    Book
+    |> where([b], b.author_id in ^author_ids)
+    |> Repo.all()
+  end
+
+  def list_books_by_author_uuid(author_uuid) do
+    Book
+    |> join(:inner, [b], a in assoc(b, :author), as: :author)
+    |> where([author: a], a.uuid == ^author_uuid)
+    |> Repo.all()
+  end
+
+  def list_books_by_author_uuids(author_uuids) do
+    Book
+    |> join(:inner, [b], a in assoc(b, :author), as: :author)
+    |> where([author: a], a.uuid in ^author_uuids)
+    |> Repo.all()
+  end
+
+  def list_books_by_author_name(author_name) do
+    Book
+    |> from(as: :book)
+    |> join(:inner, [book: b], author in assoc(b, :author), as: :author)
+    |> where([author: a], a.name == ^author_name)
+    |> where([book: b], b.rent_category == :open)
+    |> Repo.all()
+  end
+
+  def list_books_by_genre_name(genre_name) do
+    Book
+    |> from(as: :book)
+    |> join(:inner, [book: b], genre in assoc(b, :genres), as: :genre)
+    |> where([genre: g], g.name == ^genre_name)
+    |> where([book: b], b.rent_category == :open)
+    |> Repo.all()
+  end
+
   @doc """
   List books by the given parameters.
 
@@ -62,7 +114,9 @@ defmodule LibraryApp.Repositories.BookRepo do
   defp apply_params(query) do
     query
     |> Composite.param(:book_ids, &filter_by_book_ids/2)
+    |> Composite.param(:author_ids, &filter_by_author_ids/2, requires: :author)
     |> Composite.param(:titles, &filter_by_titles/2)
+    |> Composite.param(:genre_names, &filter_by_genre_names/2, requires: :genres)
     |> Composite.param(:author_name, &filter_by_author_name/2, requires: :author)
     |> Composite.param(:preload, &preload_data/2, requires: &add_dependencies_for_preloads/1)
   end
@@ -85,8 +139,16 @@ defmodule LibraryApp.Repositories.BookRepo do
     where(query, [b], b.id in ^book_ids)
   end
 
+  defp filter_by_author_ids(query, author_ids) do
+    where(query, [author: author], author.id in ^author_ids)
+  end
+
   defp filter_by_titles(query, titles) do
     where(query, [b], b.title in ^titles)
+  end
+
+  defp filter_by_genre_names(query, genre_names) do
+    where(query, [genres: g], g.name in ^genre_names)
   end
 
   defp filter_by_author_name(query, %{ci_contains: author_name}) do

@@ -62,16 +62,19 @@ defmodule LibraryApp.Repositories.AuthorRepo do
   defp apply_params(query) do
     query
     |> Composite.param(:author_ids, &filter_by_author_ids/2)
+    |> Composite.param(:books_genre_names, &filter_by_books_genre_names/2, requires: :genres)
     |> Composite.param(:names, &filter_by_names/2)
     |> Composite.param(:preload, &preload_data/2, requires: &add_dependencies_for_preloads/1)
   end
 
   @available_dependencies MapSet.new([
-                            :books
+                            :books,
+                            :genres
                           ])
   defp apply_dependencies(query) do
     query
     |> Composite.dependency(:books, &join_books/1)
+    |> Composite.dependency(:genres, &join_genres/1, requires: :books)
   end
 
   defp add_dependencies_for_preloads(preloads) do
@@ -86,8 +89,16 @@ defmodule LibraryApp.Repositories.AuthorRepo do
     where(query, [a], a.name in ^names)
   end
 
+  defp filter_by_books_genre_names(query, books_genre_names) do
+    where(query, [genres: g], g.name in ^books_genre_names)
+  end
+
   defp join_books(query) do
     join(query, :left, [a], b in assoc(a, :books), as: :books)
+  end
+
+  defp join_genres(query) do
+    join(query, :left, [books: b], g in assoc(b, :genres), as: :genres)
   end
 
   defp preload_data(query, preloads) do
