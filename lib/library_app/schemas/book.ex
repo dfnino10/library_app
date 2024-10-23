@@ -2,6 +2,7 @@ defmodule LibraryApp.Schemas.Book do
   alias LibraryApp.Schemas.BookGenre
   alias LibraryApp.Schemas.Author
   alias LibraryApp.Schemas.Genre
+  alias LibraryApp.Schemas.Loan
   use Ecto.Schema
   import Ecto.Changeset
 
@@ -15,6 +16,7 @@ defmodule LibraryApp.Schemas.Book do
     belongs_to(:author, Author)
     has_many(:book_genres, BookGenre)
     has_many(:genres, through: [:book_genres, :genre])
+    has_many(:loans, Loan)
 
     timestamps()
   end
