@@ -67,7 +67,7 @@ defmodule LibraryApp.Repositories.LoanRepo do
     |> Composite.param(:member_ids, &filter_by_member_ids/2)
     |> Composite.param(:member_names, &filter_by_member_names/2, requires: :member)
     |> Composite.param(:member_name, &filter_by_member_name/2, requires: :member)
-    |> Composite.param(:return_date, &filter_by_return_date/2)
+    |> Composite.param(:return_date, &filter_by_return_date/2, ignore?: &(&1 in [[], "", %{}]))
     |> Composite.param(:preload, &preload_data/2, requires: &add_dependencies_for_preloads/1)
   end
 
@@ -112,8 +112,20 @@ defmodule LibraryApp.Repositories.LoanRepo do
     where(query, [member: m], ilike(m.name, ^"%#{member_name}%"))
   end
 
-  defp filter_by_return_date(query, :is_nil) do
+  defp filter_by_return_date(query, nil) do
     where(query, [loan: l], is_nil(l.return_date))
+  end
+
+  defp filter_by_return_date(query, %{gt: return_date1, lt: return_date2}) do
+    where(query, [loan: l], l.return_date > ^return_date1 and l.return_date < ^return_date2)
+  end
+
+  defp filter_by_return_date(query, %{lt: return_date}) do
+    where(query, [loan: l], l.return_date < ^return_date)
+  end
+
+  defp filter_by_return_date(query, %{gt: return_date}) do
+    where(query, [loan: l], l.return_date > ^return_date)
   end
 
   defp filter_by_return_date(query, return_date) do
