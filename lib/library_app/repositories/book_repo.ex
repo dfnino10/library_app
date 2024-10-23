@@ -9,6 +9,8 @@ defmodule LibraryApp.Repositories.BookRepo do
   alias LibraryApp.Repo
   alias LibraryApp.Util.FlexHelper
 
+  ## Non-composite queries
+
   def get_book_by_id(id) do
     Repo.get_by(Book, id: id)
   end
@@ -61,7 +63,7 @@ defmodule LibraryApp.Repositories.BookRepo do
     |> Repo.all()
   end
 
-  def list_books_by_author_name_genre_and_rent_category(author_name, genre_name, rent_category) do
+  def list_books_by_author_name_genre_and_rent_category_v1(author_name, genre_name, rent_category) do
     Book
     |> from(as: :book)
     |> join(:inner, [book: b], author in assoc(b, :author), as: :author)
@@ -73,6 +75,22 @@ defmodule LibraryApp.Repositories.BookRepo do
     |> preload([:author, :genres])
     |> Repo.all()
   end
+
+  def list_books_by_author_name_genre_and_rent_category_v2(author_name, genre_name, rent_category) do
+    Book
+    |> from(as: :book)
+    |> join(:inner, [book: b], author in assoc(b, :author), as: :author)
+    |> join(:inner, [book: b], genre in assoc(b, :book_genres), as: :book_genre)
+    |> join(:inner, [book_genre: bg], g in assoc(bg, :genre), as: :genre)
+    |> join(:left, [book: b], loan in assoc(b, :loans), as: :loan)
+    |> where([author: a], a.name == ^author_name)
+    |> where([genre: g], g.name == ^genre_name)
+    |> where([book: b], b.rent_category == ^rent_category)
+    |> preload([author: a, genre: g, loan: l], author: a, genres: g, loans: l)
+    |> Repo.all()
+  end
+
+  ## Composite queries
 
   @doc """
   List books by the given parameters.
